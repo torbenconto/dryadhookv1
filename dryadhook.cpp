@@ -13,26 +13,36 @@
 
 // BEGIN SECTION INCLUDES
 #include "dryadhook.h"
+#include "hooks.h"
 // END SECTION INCLUDES
 
 // BEGIN SECTION UTILS
 
 HWND GetProcessWindow() {
-    HWND hwnd = nullptr;
-    DWORD pid = GetCurrentProcessId();
+	HWND hWnd = nullptr;
+	DWORD pid = GetCurrentProcessId();
 
-    do {
-        hwnd = FindWindowEx(nullptr, hwnd, nullptr, nullptr);
-        DWORD windowPid = 0;
-        GetWindowThreadProcessId(hwnd, &windowPid);
+	do {
+		hWnd = FindWindowEx(nullptr, hWnd, nullptr, nullptr);
+		DWORD windowPid = 0;
+		GetWindowThreadProcessId(hWnd, &windowPid);
 
-        if (windowPid == pid && IsWindowVisible(hwnd))
-            return hwnd;
+		if (windowPid == pid && IsWindowVisible(hWnd)) {
+			char className[256];
+			GetClassNameA(hWnd, className, sizeof(className));
 
-    } while (hwnd != nullptr);
+			if (strcmp(className, "Windows.UI.Core.CoreWindow") != 0 &&
+				strcmp(className, "ConsoleWindowClass") != 0 &&
+				strcmp(className, "DummyWindow") != 0)
+			{
+				return hWnd;
+			}
+		}
+	} while (hWnd != nullptr);
 
-    return nullptr;
+	return nullptr;
 }
+
 
 // END SECTION UTILS
 
@@ -49,32 +59,61 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 // BEGIN SECTION DIRECTX9
 
-bool GetD3D9Device(void **vtable, size_t size)
+bool GetD3D9Device(void** vtable, size_t size)
 {
-	if (!vtable)
-		return false;
+	if (!vtable) return false;
 
 	dryadhook::pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!dryadhook::pD3D)
-		return false;
+	if (!dryadhook::pD3D) return false;
 
-	D3DPRESENT_PARAMETERS d3dpp;
+	WNDCLASSEXA wc = {
+		sizeof(WNDCLASSEX),
+		CS_CLASSDC,
+		DefWindowProcA,
+		0L, 0L,
+		GetModuleHandle(nullptr),
+		nullptr, nullptr, nullptr, nullptr,
+		"DummyWindow", nullptr
+	};
+	RegisterClassExA(&wc);
+
+	HWND hWnd = CreateWindowA("DummyWindow", nullptr,
+		WS_OVERLAPPEDWINDOW, 0, 0, 100, 100,
+		nullptr, nullptr, wc.hInstance, nullptr);
+
+	D3DPRESENT_PARAMETERS d3dpp = {};
 	d3dpp.Windowed = TRUE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.hDeviceWindow = GetProcessWindow();
+	d3dpp.hDeviceWindow = hWnd;
 
-    if (FAILED(dryadhook::pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &dryadhook::pDevice))) {
-        dryadhook::pD3D->Release();
-        return false;
-    }
+	if (FAILED(dryadhook::pD3D->CreateDevice(
+		D3DADAPTER_DEFAULT,
+		D3DDEVTYPE_HAL,
+		hWnd,
+		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+		&d3dpp,
+		&dryadhook::pDevice)))
+	{
+		dryadhook::pD3D->Release();
+		DestroyWindow(hWnd);
+		UnregisterClassA("DummyWindow", wc.hInstance);
+		return false;
+	}
 
 	memcpy(vtable, *(void***)dryadhook::pDevice, size);
 
 	dryadhook::pDevice->Release();
+	dryadhook::pDevice = nullptr;
+
 	dryadhook::pD3D->Release();
+	dryadhook::pD3D = nullptr;
+
+	DestroyWindow(hWnd);
+	UnregisterClassA("DummyWindow", wc.hInstance);
 
 	return true;
 }
+
 
 void ReleaseD3D9Device()
 {
@@ -104,6 +143,8 @@ HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 
+		io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 16.0f);
+
 		ImGui::StyleColorsDark();
 
 		ImGui_ImplWin32_Init(dryadhook::hWnd);
@@ -121,9 +162,117 @@ HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
 
 	if (dryadhook::bShowMenu)
 	{
-		ImGui::Begin("Dryad Hook", &dryadhook::bShowMenu, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-		ImGui::Text("Hello, world!");
+		ImGui::GetIO().MouseDrawCursor = true;
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.WindowRounding = 2.0f;
+		style.FrameRounding = 2.0f;
+		style.GrabRounding = 2.0f;
+		style.ScrollbarRounding = 2.0f;
+		style.FramePadding = ImVec2(8, 4);
+		style.ItemSpacing = ImVec2(8, 8);
+		style.IndentSpacing = 16.0f;
+		style.WindowBorderSize = 0.0f;
+		style.FrameBorderSize = 0.0f;
+
+		ImVec4* colors = style.Colors;
+		colors[ImGuiCol_WindowBg] = ImVec4(0.10f, 0.12f, 0.15f, 1.00f);
+		colors[ImGuiCol_ChildBg] = ImVec4(0.13f, 0.15f, 0.18f, 1.00f);
+		colors[ImGuiCol_Border] = ImVec4(0.10f, 0.10f, 0.10f, 0.30f);
+		colors[ImGuiCol_Button] = ImVec4(0.18f, 0.20f, 0.25f, 1.00f);
+		colors[ImGuiCol_ButtonHovered] = ImVec4(0.22f, 0.25f, 0.30f, 1.00f);
+		colors[ImGuiCol_ButtonActive] = ImVec4(0.18f, 0.22f, 0.27f, 1.00f);
+		colors[ImGuiCol_Header] = ImVec4(0.20f, 0.22f, 0.27f, 1.00f);
+		colors[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.28f, 0.33f, 1.00f);
+		colors[ImGuiCol_HeaderActive] = ImVec4(0.23f, 0.26f, 0.30f, 1.00f);
+		colors[ImGuiCol_Text] = ImVec4(0.90f, 0.92f, 0.95f, 1.00f);
+
+		ImVec2 windowSize = ImVec2(550, 300);
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+
+		ImGui::Begin("Dryad Hook V1", &dryadhook::bShowMenu,
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+
+		float titleBarHeight = 30.0f;
+		ImVec2 pos = ImGui::GetWindowPos();
+		ImVec2 size = ImGui::GetWindowSize();
+
+		ImGui::GetWindowDrawList()->AddRectFilled(
+			pos, ImVec2(pos.x + size.x, pos.y + titleBarHeight),
+			IM_COL32(40, 45, 55, 255), 4.0f, ImDrawFlags_RoundCornersTop);
+
+		ImGui::SetCursorPos(ImVec2(10, 7));
+		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Dryad Hook V1");
+
+		ImGui::SetCursorPos(ImVec2(size.x - 30, 5));
+		if (ImGui::Button("X"))
+			dryadhook::bShowMenu = false;
+
+
+		ImGui::SetCursorPosY(titleBarHeight + 5);
+		ImGui::BeginChild("MainFrame", ImVec2(0, 0), false);
+
+		ImGui::BeginChild("Sidebar", ImVec2(120, 0), true);
+		{
+			auto TabButton = [](const char* label, bool selected) {
+				if (selected)
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+				else
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+
+				bool clicked = ImGui::Button(label, ImVec2(-1, 35));
+				ImGui::PopStyleColor();
+				return clicked;
+				};
+
+			if (TabButton("Player", menu::bShowTab1)) {
+				menu::bShowTab1 = true;
+				menu::bShowTab2 = false;
+				menu::bShowTab3 = false;
+			}
+			if (TabButton("World", menu::bShowTab2)) {
+				menu::bShowTab1 = false;
+				menu::bShowTab2 = true;
+				menu::bShowTab3 = false;
+			}
+			if (TabButton("Misc", menu::bShowTab3)) {
+				menu::bShowTab1 = false;
+				menu::bShowTab2 = false;
+				menu::bShowTab3 = true;
+			}
+		}
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		// Content panel
+		ImGui::BeginChild("Content", ImVec2(0, 0), true);
+		{
+			if (menu::bShowTab1) {
+				ImGui::Text("Player");
+				ImGui::Separator();
+				
+				ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
+			}
+			if (menu::bShowTab2) {
+				ImGui::Text("World Tab");
+				ImGui::Separator();
+				ImGui::Text("World-related options go here.");
+			}
+			if (menu::bShowTab3) {
+				ImGui::Text("Misc Tab");
+				ImGui::Separator();
+				ImGui::Text("Miscellaneous options go here.");
+			}
+		}
+		ImGui::EndChild();
+
+		ImGui::EndChild();
 		ImGui::End();
+
+	}
+	else {
+		ImGui::GetIO().MouseDrawCursor = false;
 	}
 
 	ImGui::EndFrame();
@@ -149,7 +298,7 @@ DWORD WINAPI HookMain(LPVOID lpParam)
 
 	dryadhook::oEndScene = (HRESULT(__stdcall*)(LPDIRECT3DDEVICE9))vtable[42];
 
-	if (!MH_CreateHook(vtable[42], &Hooked_EndScene, reinterpret_cast<void**>(&dryadhook::oEndScene)) == MH_OK) {
+	if (MH_CreateHook(vtable[42], &Hooked_EndScene, reinterpret_cast<void**>(&dryadhook::oEndScene)) != MH_OK) {
 		MH_Uninitialize();
 		return 0;
 	}
@@ -159,6 +308,12 @@ DWORD WINAPI HookMain(LPVOID lpParam)
 		MH_Uninitialize();
 		return 0;
 	}
+
+	if (MH_CreateHook((LPVOID)hooks::GetFunctionFromMemorySignature(signatures::hurtFunctionSignature, 0x25000000, 0x30000000), &hooks::hurtFunction, (LPVOID*)&hooks::oHurtFunction)) {
+		MessageBoxA(nullptr, "Failed to create hook for hurt function", "Error", MB_OK | MB_ICONERROR);
+	}
+	
+	MH_EnableHook(MH_ALL_HOOKS);
 
 	while (!GetAsyncKeyState(VK_END)) {
 		Sleep(1);

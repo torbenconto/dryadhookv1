@@ -14,6 +14,9 @@
 // MINHOOK
 #include "minhook/MinHook.h"
 
+// WINDOWS
+#include <Windows.h>
+#include <tchar.h>
 
 
 namespace dryadhook
@@ -28,4 +31,15 @@ namespace dryadhook
 
 	inline HRESULT(__stdcall* oEndScene)(LPDIRECT3DDEVICE9) = nullptr;
 
+
+	// Cheats
+	inline bool fGODMODE = false;
+
+
+}
+
+namespace menu {
+	inline bool bShowTab1 = true;
+	inline bool bShowTab2 = false;
+	inline bool bShowTab3 = false;
 }
