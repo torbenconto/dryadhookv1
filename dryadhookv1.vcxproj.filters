@@ -27,9 +27,6 @@
     <ClCompile Include="dryadhook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="minhook\hde\hde32.c">
       <Filter>lib\minhook</Filter>
     </ClCompile>
@@ -44,9 +41,6 @@
     </ClCompile>
     <ClCompile Include="minhook\trampoline.c">
       <Filter>lib\minhook</Filter>
-    </ClCompile>
-    <ClCompile Include="hooks.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_impl_win32.cpp">
       <Filter>lib</Filter>
@@ -67,6 +61,39 @@
       <Filter>lib</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_impl_dx9.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\disolx64.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\disolx86.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\image.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\modules.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\creatwth.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\detours.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\disasm.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\disolarm.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\disolarm64.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="detours\disolia64.cpp">
       <Filter>lib</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,15 +122,6 @@
     <ClInclude Include="minhook\trampoline.h">
       <Filter>lib\minhook</Filter>
     </ClInclude>
-    <ClInclude Include="hooks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="imgui\imstb_rectpack.h">
       <Filter>lib</Filter>
     </ClInclude>
@@ -126,6 +144,18 @@
       <Filter>lib</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx9.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="dryadhook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="detours\detours.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="detours\detver.h">
       <Filter>lib</Filter>
     </ClInclude>
   </ItemGroup>
