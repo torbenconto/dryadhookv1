@@ -11,8 +11,8 @@
 #include "imgui/imgui_impl_dx9.h"
 #include "imgui/imgui_impl_win32.h"
 
-// DETOURS
-#include "detours/detours.h"
+// MINHOOK
+#include "minhook/MinHook.h"
 
 
 

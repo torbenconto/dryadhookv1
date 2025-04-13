@@ -68,7 +68,7 @@ bool GetD3D9Device(void **vtable, size_t size)
         return false;
     }
 
-	memcpy(vtable, dryadhook::pDevice, size);
+	memcpy(vtable, *(void***)dryadhook::pDevice, size);
 
 	dryadhook::pDevice->Release();
 	dryadhook::pD3D->Release();
@@ -104,7 +104,6 @@ HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 
-		ImGui::CreateContext();
 		ImGui::StyleColorsDark();
 
 		ImGui_ImplWin32_Init(dryadhook::hWnd);
@@ -139,25 +138,35 @@ HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
 
 DWORD WINAPI HookMain(LPVOID lpParam)
 {
+	dryadhook::hWnd = GetProcessWindow();
+
 	void* vtable[119] = { nullptr };
 	if (!GetD3D9Device(vtable, sizeof(vtable)))
 		return 0;
 
+	if (MH_Initialize() != MH_OK)
+		return 0;
+
 	dryadhook::oEndScene = (HRESULT(__stdcall*)(LPDIRECT3DDEVICE9))vtable[42];
 
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach(&(PVOID&)dryadhook::oEndScene, Hooked_EndScene);
-	DetourTransactionCommit();
+	if (!MH_CreateHook(vtable[42], &Hooked_EndScene, reinterpret_cast<void**>(&dryadhook::oEndScene)) == MH_OK) {
+		MH_Uninitialize();
+		return 0;
+	}
+
+	if (MH_EnableHook(vtable[42]) != MH_OK) {
+		MH_RemoveHook(vtable[42]);
+		MH_Uninitialize();
+		return 0;
+	}
 
 	while (!GetAsyncKeyState(VK_END)) {
 		Sleep(1);
 	}
 
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourDetach(&(PVOID&)dryadhook::oEndScene, Hooked_EndScene);
-	DetourTransactionCommit();
+	MH_DisableHook(vtable[42]);
+	MH_RemoveHook(vtable[42]);
+	MH_Uninitialize();
 	
 	ReleaseD3D9Device();
 
@@ -167,6 +176,7 @@ DWORD WINAPI HookMain(LPVOID lpParam)
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
+
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:

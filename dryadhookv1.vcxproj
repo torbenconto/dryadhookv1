@@ -139,16 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="detours\creatwth.cpp" />
-    <ClCompile Include="detours\detours.cpp" />
-    <ClCompile Include="detours\disasm.cpp" />
-    <ClCompile Include="detours\disolarm.cpp" />
-    <ClCompile Include="detours\disolarm64.cpp" />
-    <ClCompile Include="detours\disolia64.cpp" />
-    <ClCompile Include="detours\disolx64.cpp" />
-    <ClCompile Include="detours\disolx86.cpp" />
-    <ClCompile Include="detours\image.cpp" />
-    <ClCompile Include="detours\modules.cpp" />
     <ClCompile Include="dryadhook.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_demo.cpp" />
@@ -165,10 +155,8 @@
     <ClCompile Include="minhook\trampoline.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="detours\detours.h" />
-    <ClInclude Include="detours\detver.h" />
+    <ClInclude Include="..\..\..\Downloads\imgui2\imconfig.h" />
     <ClInclude Include="dryadhook.h" />
-    <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />
     <ClInclude Include="imgui\imgui_impl_dx9.h" />
