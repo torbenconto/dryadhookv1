@@ -8,7 +8,7 @@
             |___/
 
         Dryad Hook V1 - Freeware Terraria Internal Cheat
-			    Copyright (C) 2023 Torben Conto
+              Copyright (C) 2023 Torben Conto
 */
 
 // BEGIN SECTION INCLUDES
