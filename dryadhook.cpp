@@ -14,6 +14,8 @@
 // BEGIN SECTION INCLUDES
 #include "dryadhook.h"
 #include "hooks.h"
+
+#include <intrin.h>
 // END SECTION INCLUDES
 
 // BEGIN SECTION UTILS
@@ -101,152 +103,161 @@ void ReleaseD3D9Device()
 
 HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
 {
-	if (!dryadhook::bInitialized)
-	{
-		dryadhook::oWndProc = (WNDPROC)SetWindowLongPtr(dryadhook::hWnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
+    HRESULT result;
 
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
+    static void* dwAllowedReturn = nullptr;
+    void* dwReturnAddress = _ReturnAddress();
 
-		io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 16.0f);
+    result = dryadhook::oEndScene(pDevice);
+    result = dryadhook::oEndScene(pDevice);
 
-		ImGui::StyleColorsDark();
+    if (dwAllowedReturn == 0 || dwAllowedReturn == dwReturnAddress)
+    {
+        dwAllowedReturn = dwReturnAddress;
 
-		ImGui_ImplWin32_Init(dryadhook::hWnd);
-		ImGui_ImplDX9_Init(pDevice);
-		dryadhook::bInitialized = true;
-	}
+        if (!dryadhook::bInitialized)
+        {
+            dryadhook::oWndProc = (WNDPROC)SetWindowLongPtr(dryadhook::hWnd, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
-	// Keyboard input
-	if (GetAsyncKeyState(VK_INSERT) & 1)
-		dryadhook::bShowMenu = !dryadhook::bShowMenu;
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO();
 
-	ImGui_ImplDX9_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+            io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\segoeui.ttf", 16.0f);
+            ImGui::StyleColorsDark();
 
-	if (dryadhook::bShowMenu)
-	{
-		ImGui::GetIO().MouseDrawCursor = true;
-		ImGuiStyle& style = ImGui::GetStyle();
-		style.WindowRounding = 2.0f;
-		style.FrameRounding = 2.0f;
-		style.GrabRounding = 2.0f;
-		style.ScrollbarRounding = 2.0f;
-		style.FramePadding = ImVec2(8, 4);
-		style.ItemSpacing = ImVec2(8, 8);
-		style.IndentSpacing = 16.0f;
-		style.WindowBorderSize = 0.0f;
-		style.FrameBorderSize = 0.0f;
+            ImGui_ImplWin32_Init(dryadhook::hWnd);
+            ImGui_ImplDX9_Init(pDevice);
+            dryadhook::bInitialized = true;
+        }
 
-		ImVec4* colors = style.Colors;
-		colors[ImGuiCol_WindowBg] = ImVec4(0.10f, 0.12f, 0.15f, 1.00f);
-		colors[ImGuiCol_ChildBg] = ImVec4(0.13f, 0.15f, 0.18f, 1.00f);
-		colors[ImGuiCol_Border] = ImVec4(0.10f, 0.10f, 0.10f, 0.30f);
-		colors[ImGuiCol_Button] = ImVec4(0.18f, 0.20f, 0.25f, 1.00f);
-		colors[ImGuiCol_ButtonHovered] = ImVec4(0.22f, 0.25f, 0.30f, 1.00f);
-		colors[ImGuiCol_ButtonActive] = ImVec4(0.18f, 0.22f, 0.27f, 1.00f);
-		colors[ImGuiCol_Header] = ImVec4(0.20f, 0.22f, 0.27f, 1.00f);
-		colors[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.28f, 0.33f, 1.00f);
-		colors[ImGuiCol_HeaderActive] = ImVec4(0.23f, 0.26f, 0.30f, 1.00f);
-		colors[ImGuiCol_Text] = ImVec4(0.90f, 0.92f, 0.95f, 1.00f);
+        // Keyboard toggle
+        if (GetAsyncKeyState(VK_INSERT) & 1)
+            dryadhook::bShowMenu = !dryadhook::bShowMenu;
 
-		ImVec2 windowSize = ImVec2(550, 300);
-		ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+        ImGui_ImplDX9_NewFrame();
+        ImGui_ImplWin32_NewFrame();
+        ImGui::NewFrame();
 
-		ImGui::Begin("Dryad Hook V1", &dryadhook::bShowMenu,
-			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+        if (dryadhook::bShowMenu)
+        {
+            ImGui::GetIO().MouseDrawCursor = true;
+            ImGuiStyle& style = ImGui::GetStyle();
+            style.WindowRounding = 2.0f;
+            style.FrameRounding = 2.0f;
+            style.GrabRounding = 2.0f;
+            style.ScrollbarRounding = 2.0f;
+            style.FramePadding = ImVec2(8, 4);
+            style.ItemSpacing = ImVec2(8, 8);
+            style.IndentSpacing = 16.0f;
+            style.WindowBorderSize = 0.0f;
+            style.FrameBorderSize = 0.0f;
 
-		float titleBarHeight = 30.0f;
-		ImVec2 pos = ImGui::GetWindowPos();
-		ImVec2 size = ImGui::GetWindowSize();
+            ImVec4* colors = style.Colors;
+            colors[ImGuiCol_WindowBg] = ImVec4(0.10f, 0.12f, 0.15f, 1.00f);
+            colors[ImGuiCol_ChildBg] = ImVec4(0.13f, 0.15f, 0.18f, 1.00f);
+            colors[ImGuiCol_Border] = ImVec4(0.10f, 0.10f, 0.10f, 0.30f);
+            colors[ImGuiCol_Button] = ImVec4(0.18f, 0.20f, 0.25f, 1.00f);
+            colors[ImGuiCol_ButtonHovered] = ImVec4(0.22f, 0.25f, 0.30f, 1.00f);
+            colors[ImGuiCol_ButtonActive] = ImVec4(0.18f, 0.22f, 0.27f, 1.00f);
+            colors[ImGuiCol_Header] = ImVec4(0.20f, 0.22f, 0.27f, 1.00f);
+            colors[ImGuiCol_HeaderHovered] = ImVec4(0.25f, 0.28f, 0.33f, 1.00f);
+            colors[ImGuiCol_HeaderActive] = ImVec4(0.23f, 0.26f, 0.30f, 1.00f);
+            colors[ImGuiCol_Text] = ImVec4(0.90f, 0.92f, 0.95f, 1.00f);
 
-		ImGui::GetWindowDrawList()->AddRectFilled(
-			pos, ImVec2(pos.x + size.x, pos.y + titleBarHeight),
-			IM_COL32(40, 45, 55, 255), 4.0f, ImDrawFlags_RoundCornersTop);
+            ImVec2 windowSize = ImVec2(550, 300);
+            ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
 
-		ImGui::SetCursorPos(ImVec2(10, 7));
-		ImGui::TextColored(ImVec4(1, 1, 1, 1), "Dryad Hook V1");
+            ImGui::Begin("Dryad Hook V1", &dryadhook::bShowMenu,
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 
-		ImGui::SetCursorPos(ImVec2(size.x - 30, 5));
-		if (ImGui::Button("X"))
-			dryadhook::bShowMenu = false;
+            float titleBarHeight = 30.0f;
+            ImVec2 pos = ImGui::GetWindowPos();
+            ImVec2 size = ImGui::GetWindowSize();
 
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                pos, ImVec2(pos.x + size.x, pos.y + titleBarHeight),
+                IM_COL32(40, 45, 55, 255), 4.0f, ImDrawFlags_RoundCornersTop);
 
-		ImGui::SetCursorPosY(titleBarHeight + 5);
-		ImGui::BeginChild("MainFrame", ImVec2(0, 0), false);
+            ImGui::SetCursorPos(ImVec2(10, 7));
+            ImGui::TextColored(ImVec4(1, 1, 1, 1), "Dryad Hook V1");
 
-		ImGui::BeginChild("Sidebar", ImVec2(120, 0), true);
-		{
-			auto TabButton = [](const char* label, bool selected) {
-				if (selected)
-					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-				else
-					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
+            ImGui::SetCursorPos(ImVec2(size.x - 30, 5));
+            if (ImGui::Button("X"))
+                dryadhook::bShowMenu = false;
 
-				bool clicked = ImGui::Button(label, ImVec2(-1, 35));
-				ImGui::PopStyleColor();
-				return clicked;
-				};
+            ImGui::SetCursorPosY(titleBarHeight + 5);
+            ImGui::BeginChild("MainFrame", ImVec2(0, 0), false);
 
-			if (TabButton("Player", menu::bShowTab1)) {
-				menu::bShowTab1 = true;
-				menu::bShowTab2 = false;
-				menu::bShowTab3 = false;
-			}
-			if (TabButton("World", menu::bShowTab2)) {
-				menu::bShowTab1 = false;
-				menu::bShowTab2 = true;
-				menu::bShowTab3 = false;
-			}
-			if (TabButton("Misc", menu::bShowTab3)) {
-				menu::bShowTab1 = false;
-				menu::bShowTab2 = false;
-				menu::bShowTab3 = true;
-			}
-		}
-		ImGui::EndChild();
+            ImGui::BeginChild("Sidebar", ImVec2(120, 0), true);
+            {
+                auto TabButton = [](const char* label, bool selected) {
+                    if (selected)
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+                    else
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Button));
 
-		ImGui::SameLine();
+                    bool clicked = ImGui::Button(label, ImVec2(-1, 35));
+                    ImGui::PopStyleColor();
+                    return clicked;
+                    };
 
-		// Content panel
-		ImGui::BeginChild("Content", ImVec2(0, 0), true);
-		{
-			if (menu::bShowTab1) {
-				ImGui::Text("Player");
-				ImGui::Separator();
-				
-				ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
-			}
-			if (menu::bShowTab2) {
-				ImGui::Text("World Tab");
-				ImGui::Separator();
-				ImGui::Text("World-related options go here.");
-			}
-			if (menu::bShowTab3) {
-				ImGui::Text("Misc Tab");
-				ImGui::Separator();
-				ImGui::Text("Miscellaneous options go here.");
-			}
-		}
-		ImGui::EndChild();
+                if (TabButton("Player", menu::bShowTab1)) {
+                    menu::bShowTab1 = true;
+                    menu::bShowTab2 = false;
+                    menu::bShowTab3 = false;
+                }
+                if (TabButton("World", menu::bShowTab2)) {
+                    menu::bShowTab1 = false;
+                    menu::bShowTab2 = true;
+                    menu::bShowTab3 = false;
+                }
+                if (TabButton("Misc", menu::bShowTab3)) {
+                    menu::bShowTab1 = false;
+                    menu::bShowTab2 = false;
+                    menu::bShowTab3 = true;
+                }
+            }
+            ImGui::EndChild();
 
-		ImGui::EndChild();
-		ImGui::End();
+            ImGui::SameLine();
 
-	}
-	else {
-		ImGui::GetIO().MouseDrawCursor = false;
-	}
+            ImGui::BeginChild("Content", ImVec2(0, 0), true);
+            {
+                if (menu::bShowTab1) {
+                    ImGui::Text("Player");
+                    ImGui::Separator();
+                    ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
+                }
+                if (menu::bShowTab2) {
+                    ImGui::Text("World Tab");
+                    ImGui::Separator();
+                    ImGui::Text("World-related options go here.");
+                }
+                if (menu::bShowTab3) {
+                    ImGui::Text("Misc Tab");
+                    ImGui::Separator();
+                    ImGui::Text("Miscellaneous options go here.");
+                }
+            }
+            ImGui::EndChild();
 
-	ImGui::EndFrame();
-	ImGui::Render();
-	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+            ImGui::EndChild();
+            ImGui::End();
+        }
+        else {
+            ImGui::GetIO().MouseDrawCursor = false;
+        }
 
-	return dryadhook::oEndScene(pDevice);
+        ImGui::EndFrame();
+        ImGui::Render();
+        ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    return result;
 }
+
 // END SECTION HOOKS
 
 // BEGIN SECTION MAIN
