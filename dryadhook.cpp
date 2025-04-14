@@ -211,10 +211,29 @@ HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
             ImGui::BeginChild("Content", ImVec2(0, 0), true);
             {
                 if (menu::bShowTab1) {
-                    ImGui::Text("Player");
+                    ImGui::Text("Player Tab");
                     ImGui::Separator();
-                    ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
+
+                    DWORD localPlayer = hooks::GetLocalPlayer();
+                    ImGui::Text("localPlayer: 0x%X", localPlayer);
+
+                    if (localPlayer == 0) {
+                        ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Player not found.");
+                    }
+                    else {
+                        float posX = *(float*)(localPlayer + 0x28);
+                        float posY = *(float*)(localPlayer + 0x2C);
+
+                        ImGui::SliderFloat("Position X", &posX, 0, 60000);
+                        ImGui::SliderFloat("Position Y", &posY, 600, 25000);
+
+						ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
+
+                        *(float*)(localPlayer + 0x28) = posX;
+                        *(float*)(localPlayer + 0x2C) = posY;
+                    }
                 }
+
                 if (menu::bShowTab2) {
                     ImGui::Text("World Tab");
                     ImGui::Separator();
@@ -267,7 +286,7 @@ DWORD WINAPI Main(LPVOID lpParam)
 		return 0;
 	}
 
-	if (MH_CreateHook((LPVOID)hooks::GetFunctionFromMemorySignature(signatures::hurtFunctionSignature, 0x25000000, 0x30000000), &hooks::hurtFunction, (LPVOID*)&hooks::oHurtFunction)) {
+	if (MH_CreateHook((LPVOID)hooks::GetAddressFromMemorySignature(signatures::hurtFunctionSignature, 0x25000000, 0x30000000), &hooks::hurtFunction, (LPVOID*)&hooks::oHurtFunction)) {
 		MessageBoxA(nullptr, "Failed to create hook for hurt function", "Error", MB_OK | MB_ICONERROR);
 	}
 	
