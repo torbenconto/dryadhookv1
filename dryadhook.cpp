@@ -11,14 +11,11 @@
               Copyright (C) 2023 Torben Conto
 */
 
-// BEGIN SECTION INCLUDES
 #include "dryadhook.h"
 #include "hooks.h"
 
 #include <intrin.h>
-// END SECTION INCLUDES
 
-// BEGIN SECTION UTILS
 
 HWND GetProcessWindow() {
     HWND hwnd = nullptr;
@@ -37,9 +34,6 @@ HWND GetProcessWindow() {
     return nullptr;
 }
 
-// END SECTION UTILS
-
-// BEGIN SECTION IMGUI
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND, UINT, WPARAM, LPARAM);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -48,9 +42,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	return CallWindowProc(dryadhook::oWndProc, hWnd, msg, wParam, lParam);
 }
-// END SECTION IMGUI
-
-// BEGIN SECTION DIRECTX9
 
 bool GetD3D9Device(void **vtable, size_t size)
 {
@@ -97,9 +88,6 @@ void ReleaseD3D9Device()
 	}
 }
 
-// END SECTION DIRECTX9
-
-// BEGIN SECTION HOOKS
 
 HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
 {
@@ -258,10 +246,6 @@ HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
     return result;
 }
 
-// END SECTION HOOKS
-
-// BEGIN SECTION MAIN
-
 DWORD WINAPI HookMain(LPVOID lpParam)
 {
 	dryadhook::hWnd = GetProcessWindow();
@@ -321,5 +305,3 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	}
 	return TRUE;
 }
-
-// END SECTION MAIN
