@@ -88,8 +88,7 @@ void ReleaseD3D9Device()
 	}
 }
 
-
-HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
+HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
 {
     HRESULT result;
 
@@ -246,7 +245,7 @@ HRESULT __stdcall Hooked_EndScene(LPDIRECT3DDEVICE9 pDevice)
     return result;
 }
 
-DWORD WINAPI HookMain(LPVOID lpParam)
+DWORD WINAPI Main(LPVOID lpParam)
 {
 	dryadhook::hWnd = GetProcessWindow();
 
@@ -259,7 +258,7 @@ DWORD WINAPI HookMain(LPVOID lpParam)
 
 	dryadhook::oEndScene = (HRESULT(__stdcall*)(LPDIRECT3DDEVICE9))vtable[42];
 
-	if (MH_CreateHook(vtable[42], &Hooked_EndScene, reinterpret_cast<void**>(&dryadhook::oEndScene)) != MH_OK) {
+	if (MH_CreateHook(vtable[42], &hkEndScene, reinterpret_cast<void**>(&dryadhook::oEndScene)) != MH_OK) {
 		MH_Uninitialize();
 		return 0;
 	}
@@ -296,7 +295,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		CreateThread(nullptr, 0, HookMain, hModule, 0, nullptr);
+		CreateThread(nullptr, 0, Main, hModule, 0, nullptr);
 		break;
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
