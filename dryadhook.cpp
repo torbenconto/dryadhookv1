@@ -19,30 +19,21 @@
 // BEGIN SECTION UTILS
 
 HWND GetProcessWindow() {
-	HWND hWnd = nullptr;
-	DWORD pid = GetCurrentProcessId();
+    HWND hwnd = nullptr;
+    DWORD pid = GetCurrentProcessId();
 
-	do {
-		hWnd = FindWindowEx(nullptr, hWnd, nullptr, nullptr);
-		DWORD windowPid = 0;
-		GetWindowThreadProcessId(hWnd, &windowPid);
+    do {
+        hwnd = FindWindowEx(nullptr, hwnd, nullptr, nullptr);
+        DWORD windowPid = 0;
+        GetWindowThreadProcessId(hwnd, &windowPid);
 
-		if (windowPid == pid && IsWindowVisible(hWnd)) {
-			char className[256];
-			GetClassNameA(hWnd, className, sizeof(className));
+        if (windowPid == pid && IsWindowVisible(hwnd))
+            return hwnd;
 
-			if (strcmp(className, "Windows.UI.Core.CoreWindow") != 0 &&
-				strcmp(className, "ConsoleWindowClass") != 0 &&
-				strcmp(className, "DummyWindow") != 0)
-			{
-				return hWnd;
-			}
-		}
-	} while (hWnd != nullptr);
+    } while (hwnd != nullptr);
 
-	return nullptr;
+    return nullptr;
 }
-
 
 // END SECTION UTILS
 
@@ -59,61 +50,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 // BEGIN SECTION DIRECTX9
 
-bool GetD3D9Device(void** vtable, size_t size)
+bool GetD3D9Device(void **vtable, size_t size)
 {
-	if (!vtable) return false;
+	if (!vtable)
+		return false;
 
 	dryadhook::pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!dryadhook::pD3D) return false;
+	if (!dryadhook::pD3D)
+		return false;
 
-	WNDCLASSEXA wc = {
-		sizeof(WNDCLASSEX),
-		CS_CLASSDC,
-		DefWindowProcA,
-		0L, 0L,
-		GetModuleHandle(nullptr),
-		nullptr, nullptr, nullptr, nullptr,
-		"DummyWindow", nullptr
-	};
-	RegisterClassExA(&wc);
-
-	HWND hWnd = CreateWindowA("DummyWindow", nullptr,
-		WS_OVERLAPPEDWINDOW, 0, 0, 100, 100,
-		nullptr, nullptr, wc.hInstance, nullptr);
-
-	D3DPRESENT_PARAMETERS d3dpp = {};
+	D3DPRESENT_PARAMETERS d3dpp;
 	d3dpp.Windowed = TRUE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.hDeviceWindow = hWnd;
+	d3dpp.hDeviceWindow = GetProcessWindow();
+	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+	d3dpp.BackBufferWidth = 0;
+	d3dpp.BackBufferHeight = 0;
+	d3dpp.BackBufferCount = 1;
 
-	if (FAILED(dryadhook::pD3D->CreateDevice(
-		D3DADAPTER_DEFAULT,
-		D3DDEVTYPE_HAL,
-		hWnd,
-		D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-		&d3dpp,
-		&dryadhook::pDevice)))
-	{
-		dryadhook::pD3D->Release();
-		DestroyWindow(hWnd);
-		UnregisterClassA("DummyWindow", wc.hInstance);
-		return false;
-	}
+    if (FAILED(dryadhook::pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &dryadhook::pDevice))) {
+        dryadhook::pD3D->Release();
+        return false;
+    }
 
 	memcpy(vtable, *(void***)dryadhook::pDevice, size);
 
 	dryadhook::pDevice->Release();
-	dryadhook::pDevice = nullptr;
-
 	dryadhook::pD3D->Release();
-	dryadhook::pD3D = nullptr;
-
-	DestroyWindow(hWnd);
-	UnregisterClassA("DummyWindow", wc.hInstance);
 
 	return true;
 }
-
 
 void ReleaseD3D9Device()
 {
