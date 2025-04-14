@@ -13,7 +13,6 @@
 
 #include "dryadhook.h"
 #include "hooks.h"
-
 #include <intrin.h>
 
 
@@ -95,7 +94,6 @@ HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
     static void* dwAllowedReturn = nullptr;
     void* dwReturnAddress = _ReturnAddress();
 
-    result = dryadhook::oEndScene(pDevice);
     result = dryadhook::oEndScene(pDevice);
 
     if (dwAllowedReturn == 0 || dwAllowedReturn == dwReturnAddress)
