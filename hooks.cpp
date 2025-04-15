@@ -63,6 +63,18 @@ DWORD hooks::GetLocalPlayer()
     return cachedLocalPlayer;
 }
 
+static bool* cached = nullptr;
+
+bool* hooks::GetGameMenuFlag() {
+    if (cached)
+        return cached;
+
+    DWORD gameMenuAddress = hooks::GetAddressFromMemorySignature(signatures::gameMenuSig, 0x26000000, 0x35000000);
+    if (gameMenuAddress) {
+        cached = (bool*)(*(DWORD*)(gameMenuAddress + 2));
+    }
+    return cached;
+}
 
 float __fastcall hooks::hurtFunction(void* __1, void* damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, bool dodgeable)
 {

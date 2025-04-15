@@ -214,23 +214,30 @@ HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
                     ImGui::Text("Player Tab");
                     ImGui::Separator();
 
-                    DWORD localPlayer = hooks::GetLocalPlayer();
-                    ImGui::Text("localPlayer: 0x%X", localPlayer);
-
-                    if (localPlayer == 0) {
-                        ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Player not found.");
+                    bool* gameMenu = hooks::GetGameMenuFlag();
+                    if (gameMenu && *gameMenu) {
+                        ImGui::TextColored(ImVec4(1, 0.6f, 0.3f, 1), "Main menu is active. Player data not available.");
                     }
                     else {
-                        float posX = *(float*)(localPlayer + 0x28);
-                        float posY = *(float*)(localPlayer + 0x2C);
+                        DWORD localPlayer = hooks::GetLocalPlayer();
+                        ImGui::Text("localPlayer: 0x%X", localPlayer);
 
-                        ImGui::SliderFloat("Position X", &posX, 0, 60000);
-                        ImGui::SliderFloat("Position Y", &posY, 600, 25000);
 
-						ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
+                        if (localPlayer == 0) {
+                            ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Player not found.");
+                        }
+                        else {
+                            float posX = *(float*)(localPlayer + 0x28);
+                            float posY = *(float*)(localPlayer + 0x2C);
 
-                        *(float*)(localPlayer + 0x28) = posX;
-                        *(float*)(localPlayer + 0x2C) = posY;
+                            ImGui::SliderFloat("Position X", &posX, 0, 60000);
+                            ImGui::SliderFloat("Position Y", &posY, 600, 25000);
+
+                            ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
+
+                            *(float*)(localPlayer + 0x28) = posX;
+                            *(float*)(localPlayer + 0x2C) = posY;
+                        }
                     }
                 }
 
