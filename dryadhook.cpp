@@ -124,6 +124,14 @@ HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        //ImGui::SetNextWindowSize(ImVec2(400, 50), ImGuiCond_FirstUseEver); // Set the window size
+        //ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver); // Position the window at the top-left corner
+        //ImGui::Begin("Watermark", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
+
+        //ImGui::TextColored(ImVec4(1, 1, 1, 1), "Dryad Hook V1 - Freeware Terraria Internal Cheat");
+
+        //ImGui::End();
+
         if (dryadhook::bShowMenu)
         {
             ImGui::GetIO().MouseDrawCursor = true;
@@ -227,16 +235,13 @@ HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
                             ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Player not found.");
                         }
                         else {
-                            float posX = *(float*)(localPlayer + 0x28);
-                            float posY = *(float*)(localPlayer + 0x2C);
-
-                            ImGui::SliderFloat("Position X", &posX, 0, 60000);
-                            ImGui::SliderFloat("Position Y", &posY, 600, 25000);
+							ImGui::Text("Position: (%.2f, %.2f)", player::posX, player::posY);
+							ImGui::Text("Velocity: (%.2f, %.2f)", player::velX, player::velY);
+							ImGui::Text("Health: %d / %d", player::health, player::maxHealth);
 
                             ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
-
-                            *(float*)(localPlayer + 0x28) = posX;
-                            *(float*)(localPlayer + 0x2C) = posY;
+							ImGui::Checkbox("Fly", &dryadhook::fFLYHACK);
+							ImGui::Checkbox("No Clip", &dryadhook::fNOCLIP);
                         }
                     }
                 }
@@ -295,6 +300,10 @@ DWORD WINAPI Main(LPVOID lpParam)
 
 	if (MH_CreateHook((LPVOID)hooks::GetAddressFromMemorySignature(signatures::hurtFunctionSignature, 0x25000000, 0x30000000), &hooks::hurtFunction, (LPVOID*)&hooks::oHurtFunction)) {
 		MessageBoxA(nullptr, "Failed to create hook for hurt function", "Error", MB_OK | MB_ICONERROR);
+	}
+
+	if (MH_CreateHook((LPVOID)hooks::GetAddressFromMemorySignature(signatures::UpdateFunctionSignature, 0x2a000000, 0x50000000), &hooks::updateFunction, (LPVOID*)&hooks::oUpdateFunction)) {
+		MessageBoxA(nullptr, "Failed to create hook for update function", "Error", MB_OK | MB_ICONERROR);
 	}
 	
 	MH_EnableHook(MH_ALL_HOOKS);

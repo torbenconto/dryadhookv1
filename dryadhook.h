@@ -34,7 +34,12 @@ namespace dryadhook
 
 	// Cheats
 	inline bool fGODMODE = false;
+	inline bool fFLYHACK = false;
+	inline bool fNOCLIP = false;
+	
 
+	inline int fFlySpeed = 1.0;
+	inline float fVelocityMultiplier = 1.0f;
 
 }
 

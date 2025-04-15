@@ -87,3 +87,53 @@ float __fastcall hooks::hurtFunction(void* __1, void* damageSource, int damage, 
 		return oHurtFunction(__1, damageSource, damage, hitDirection, pvp, quiet, crit, cooldownCounter, dodgeable);
 	}
 }
+
+void __fastcall hooks::updateFunction(void* __1, int w)
+{
+    DWORD localPlayer = hooks::GetLocalPlayer();
+    if (localPlayer != 0)
+    {
+        int health = *(int*)(localPlayer + 0x408);
+        int maxHealth = *(int*)(localPlayer + 0x400);
+
+        float posX = *(float*)(localPlayer + 0x28);
+        float posY = *(float*)(localPlayer + 0x2C);
+
+        float velX = 0.0f;
+        float velY = 0.0f;
+
+        if (dryadhook::fNOCLIP)
+        {
+            *(float*)(localPlayer + 0x30) = 0.0f;     // velX
+            *(float*)(localPlayer + 0x34) = -0.4f;    // velY
+
+            if (GetAsyncKeyState(0x57)) posY -= (5 * dryadhook::fFlySpeed); // W
+            if (GetAsyncKeyState(0x53)) posY += (5 * dryadhook::fFlySpeed); // S
+            if (GetAsyncKeyState(0x41)) posX -= (5 * dryadhook::fFlySpeed); // A
+            if (GetAsyncKeyState(0x44)) posX += (5 * dryadhook::fFlySpeed); // D
+
+            *(float*)(localPlayer + 0x28) = posX;
+            *(float*)(localPlayer + 0x2C) = posY;
+        } else if (dryadhook::fFLYHACK)
+        {
+            if (GetAsyncKeyState(0x57)) velY = -5.0f * dryadhook::fFlySpeed; // W = up
+            if (GetAsyncKeyState(0x53)) velY = 5.0f * dryadhook::fFlySpeed; // S = down
+            if (GetAsyncKeyState(0x41)) velX = -5.0f * dryadhook::fFlySpeed; // A = left
+            if (GetAsyncKeyState(0x44)) velX = 5.0f * dryadhook::fFlySpeed; // D = right
+
+            *(float*)(localPlayer + 0x30) = velX;
+            *(float*)(localPlayer + 0x34) = velY;
+        }
+
+        // Update menu values after potential modification
+        player::health = health;
+        player::maxHealth = maxHealth;
+        player::posX = *(float*)(localPlayer + 0x28);
+        player::posY = *(float*)(localPlayer + 0x2C);
+        player::velX = *(float*)(localPlayer + 0x30);
+        player::velY = *(float*)(localPlayer + 0x34);
+    }
+
+    oUpdateFunction(__1, w);
+}
+
