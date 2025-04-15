@@ -93,6 +93,7 @@ void __fastcall hooks::updateFunction(void* __1, int w)
     DWORD localPlayer = hooks::GetLocalPlayer();
     if (localPlayer != 0)
     {
+        // Read health and position
         int health = *(int*)(localPlayer + 0x408);
         int maxHealth = *(int*)(localPlayer + 0x400);
 
@@ -102,30 +103,35 @@ void __fastcall hooks::updateFunction(void* __1, int w)
         float velX = 0.0f;
         float velY = 0.0f;
 
+        const float speed = 5.0f * dryadhook::fVelocityMultiplier;
+
         if (dryadhook::fNOCLIP)
         {
-            *(float*)(localPlayer + 0x30) = 0.0f;     // velX
-            *(float*)(localPlayer + 0x34) = -0.4f;    // velY
+            *(float*)(localPlayer + 0x30) = 0.0f;  // velX
+            *(float*)(localPlayer + 0x34) = -0.4f; // velY
 
-            if (GetAsyncKeyState(0x57)) posY -= (5 * dryadhook::fFlySpeed); // W
-            if (GetAsyncKeyState(0x53)) posY += (5 * dryadhook::fFlySpeed); // S
-            if (GetAsyncKeyState(0x41)) posX -= (5 * dryadhook::fFlySpeed); // A
-            if (GetAsyncKeyState(0x44)) posX += (5 * dryadhook::fFlySpeed); // D
+            if (GetAsyncKeyState(0x57)) posY -= speed; // W
+            if (GetAsyncKeyState(0x53)) posY += speed; // S
+            if (GetAsyncKeyState(0x41)) posX -= speed; // A
+            if (GetAsyncKeyState(0x44)) posX += speed; // D
 
             *(float*)(localPlayer + 0x28) = posX;
             *(float*)(localPlayer + 0x2C) = posY;
-        } else if (dryadhook::fFLYHACK)
+        }
+        else if (dryadhook::fFLYHACK)
         {
-            if (GetAsyncKeyState(0x57)) velY = -5.0f * dryadhook::fFlySpeed; // W = up
-            if (GetAsyncKeyState(0x53)) velY = 5.0f * dryadhook::fFlySpeed; // S = down
-            if (GetAsyncKeyState(0x41)) velX = -5.0f * dryadhook::fFlySpeed; // A = left
-            if (GetAsyncKeyState(0x44)) velX = 5.0f * dryadhook::fFlySpeed; // D = right
+            *(float*)(localPlayer + 0x34) = -0.4f;
+
+            if (GetAsyncKeyState(0x57)) velY = -speed; // W = up
+            if (GetAsyncKeyState(0x53)) velY = speed;  // S = down
+            if (GetAsyncKeyState(0x41)) velX = -speed; // A = left
+            if (GetAsyncKeyState(0x44)) velX = speed;  // D = right
 
             *(float*)(localPlayer + 0x30) = velX;
             *(float*)(localPlayer + 0x34) = velY;
         }
 
-        // Update menu values after potential modification
+        // Update player struct
         player::health = health;
         player::maxHealth = maxHealth;
         player::posX = *(float*)(localPlayer + 0x28);

@@ -242,6 +242,8 @@ HRESULT __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice)
                             ImGui::Checkbox("God Mode", &dryadhook::fGODMODE);
 							ImGui::Checkbox("Fly", &dryadhook::fFLYHACK);
 							ImGui::Checkbox("No Clip", &dryadhook::fNOCLIP);
+
+							ImGui::SliderFloat("Velocity Multiplier", &dryadhook::fVelocityMultiplier, 0.1f, 10.0f, "%.1f");
                         }
                     }
                 }
