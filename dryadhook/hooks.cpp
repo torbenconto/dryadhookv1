@@ -130,8 +130,12 @@ void __fastcall hooks::updateFunction(void* __1, int w)
             *(float*)(localPlayer + 0x30) = velX;
             *(float*)(localPlayer + 0x34) = velY;
         }
+		if (dryadhook::fGODMODE)
+		{
+            *(float*)(localPlayer + 0x408) = *(int*)(localPlayer + 0x400);
 
-        // Update player struct
+		}
+
         player::health = health;
         player::maxHealth = maxHealth;
         player::posX = *(float*)(localPlayer + 0x28);
@@ -142,4 +146,3 @@ void __fastcall hooks::updateFunction(void* __1, int w)
 
     oUpdateFunction(__1, w);
 }
-
