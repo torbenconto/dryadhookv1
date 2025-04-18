@@ -11,6 +11,16 @@
 const char* downloadUrl = "https://github.com/torbenconto/dryadhookv1/releases/latest/download/dryadhookv1.dll";
 const wchar_t* targetProcess = L"Terraria.exe";
 
+const char* dryadhookLogo = R"(
+ ____                       _ _   _             _   __     ___ 
+|  _ \ _ __ _   _  __ _  __| | | | | ___   ___ | | _\ \   / / | 
+| | | | '__| | | |/ _` |/ _` | |_| |/ _ \ / _ \| |/ /\ \ / /| |
+| |_| | |  | |_| | (_| | (_| |  _  | (_) | (_) |   <  \ V / | |
+|____/|_|   \__, |\__,_|\__,_|_| |_|\___/ \___/|_|\_\  \_/  |_|
+            |___/
+
+)";
+
 bool getTempDllPath(char* outPath, size_t size) {
     char tempPath[MAX_PATH];
     if (GetTempPathA(MAX_PATH, tempPath) == 0) {
@@ -116,6 +126,9 @@ int main() {
     if (!getTempDllPath(tempDllPath, sizeof(tempDllPath))) {
         return 1;
     }
+
+    std::cout << dryadhookLogo;
+    std::cout << "[*] DryadHook v1.0 - Injector Module\n";
 
     std::cout << "[*] Downloading DLL to temporary directory...\n";
     if (!downloadDll(downloadUrl, tempDllPath)) {
